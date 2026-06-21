@@ -1,0 +1,47 @@
+import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+import { getSession } from "@/lib/auth";
+
+export async function GET() {
+  try {
+    const session = await getSession();
+
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      include: {
+        role: true,
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // Remove passwordHash from response
+    const { passwordHash: _, ...userWithoutPassword } = user;
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: userWithoutPassword,
+      },
+      { status: 200 }
+    );
+  } catch (error: any) {
+    console.error("Auth Me Error:", error);
+    return NextResponse.json(
+      { success: false, error: "Terjadi kesalahan pada server" },
+      { status: 500 }
+    );
+  }
+}

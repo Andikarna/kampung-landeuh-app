@@ -1,0 +1,252 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// AUTH & USERS
+// ==========================================
+
+model Role {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+  users     User[]
+
+  @@map("roles")
+}
+
+model User {
+  id            Int            @id @default(autoincrement())
+  fullName      String         @map("full_name") @db.VarChar(100)
+  email         String         @unique @db.VarChar(255)
+  phone         String?        @db.VarChar(20)
+  passwordHash  String         @map("password_hash") @db.VarChar(255)
+  roleId        Int            @map("role_id")
+  avatarUrl     String?        @map("avatar_url") @db.VarChar(500)
+  isActive      Boolean        @default(true) @map("is_active")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  role          Role           @relation(fields: [roleId], references: [id])
+  bookings      Booking[]
+  reviews       Review[]
+  articles      Article[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+// ==========================================
+// DESTINATIONS
+// ==========================================
+
+model DestinationCategory {
+  id           Int           @id @default(autoincrement())
+  name         String        @db.VarChar(100)
+  slug         String        @unique @db.VarChar(100)
+  icon         String?       @db.VarChar(50)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  destinations Destination[]
+
+  @@map("destination_categories")
+}
+
+model Destination {
+  id                   Int                   @id @default(autoincrement())
+  name                 String                @db.VarChar(200)
+  slug                 String                @unique @db.VarChar(200)
+  categoryId           Int                   @map("category_id")
+  description          String?               @db.Text
+  location             String?               @db.VarChar(300)
+  latitude             Decimal?              @db.Decimal(10, 8)
+  longitude            Decimal?              @db.Decimal(11, 8)
+  ticketPrice          Decimal               @default(0) @map("ticket_price") @db.Decimal(12, 2)
+  openingHours         String?               @map("opening_hours") @db.VarChar(100)
+  coverImage           String?               @map("cover_image") @db.VarChar(500)
+  status               String                @default("active") @db.VarChar(20)
+  viewCount            Int                   @default(0) @map("view_count")
+  averageRating        Decimal               @default(0) @map("average_rating") @db.Decimal(2, 1)
+  totalReviews         Int                   @default(0) @map("total_reviews")
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+
+  category             DestinationCategory   @relation(fields: [categoryId], references: [id])
+  destinationFacilities DestinationFacility[]
+  galleries            Gallery[]
+  bookings             Booking[]
+  reviews              Review[]
+
+  @@map("destinations")
+}
+
+// ==========================================
+// FACILITIES
+// ==========================================
+
+model Facility {
+  id                    Int                   @id @default(autoincrement())
+  name                  String                @db.VarChar(100)
+  icon                  String?               @db.VarChar(50)
+  description           String?               @db.Text
+  createdAt             DateTime              @default(now()) @map("created_at")
+  destinationFacilities DestinationFacility[]
+
+  @@map("facilities")
+}
+
+model DestinationFacility {
+  id            Int         @id @default(autoincrement())
+  destinationId Int         @map("destination_id")
+  facilityId    Int         @map("facility_id")
+
+  destination   Destination @relation(fields: [destinationId], references: [id], onDelete: Cascade)
+  facility      Facility    @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+
+  @@unique([destinationId, facilityId])
+  @@map("destination_facilities")
+}
+
+// ==========================================
+// GALLERY
+// ==========================================
+
+model Gallery {
+  id            Int          @id @default(autoincrement())
+  destinationId Int?         @map("destination_id")
+  title         String?      @db.VarChar(200)
+  mediaUrl      String       @map("media_url") @db.VarChar(500)
+  mediaType     String       @default("photo") @map("media_type") @db.VarChar(20)
+  thumbnailUrl  String?      @map("thumbnail_url") @db.VarChar(500)
+  sortOrder     Int          @default(0) @map("sort_order")
+  isFeatured    Boolean      @default(false) @map("is_featured")
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  destination   Destination? @relation(fields: [destinationId], references: [id])
+
+  @@map("galleries")
+}
+
+// ==========================================
+// EVENTS
+// ==========================================
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(200)
+  slug        String   @unique @db.VarChar(200)
+  description String?  @db.Text
+  eventDate   DateTime @map("event_date") @db.Date
+  eventTime   String?  @map("event_time") @db.VarChar(10)
+  endDate     DateTime? @map("end_date") @db.Date
+  location    String?  @db.VarChar(300)
+  bannerUrl   String?  @map("banner_url") @db.VarChar(500)
+  status      String   @default("upcoming") @db.VarChar(20)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("events")
+}
+
+// ==========================================
+// BOOKINGS
+// ==========================================
+
+model Booking {
+  id               Int         @id @default(autoincrement())
+  bookingNumber    String      @unique @map("booking_number") @db.VarChar(20)
+  userId           Int         @map("user_id")
+  destinationId    Int         @map("destination_id")
+  visitDate        DateTime    @map("visit_date") @db.Date
+  numberOfVisitors Int         @default(1) @map("number_of_visitors")
+  totalPrice       Decimal     @map("total_price") @db.Decimal(12, 2)
+  status           String      @default("pending") @db.VarChar(20)
+  notes            String?     @db.Text
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
+
+  user             User        @relation(fields: [userId], references: [id])
+  destination      Destination @relation(fields: [destinationId], references: [id])
+
+  @@map("bookings")
+}
+
+// ==========================================
+// REVIEWS
+// ==========================================
+
+model Review {
+  id            Int         @id @default(autoincrement())
+  userId        Int         @map("user_id")
+  destinationId Int         @map("destination_id")
+  rating        Int         @db.TinyInt
+  comment       String?     @db.Text
+  isApproved    Boolean     @default(false) @map("is_approved")
+  createdAt     DateTime    @default(now()) @map("created_at")
+
+  user          User        @relation(fields: [userId], references: [id])
+  destination   Destination @relation(fields: [destinationId], references: [id])
+
+  @@unique([userId, destinationId])
+  @@map("reviews")
+}
+
+// ==========================================
+// ARTICLES / BLOG
+// ==========================================
+
+model Article {
+  id           Int       @id @default(autoincrement())
+  title        String    @db.VarChar(300)
+  slug         String    @unique @db.VarChar(300)
+  content      String?   @db.LongText
+  thumbnailUrl String?   @map("thumbnail_url") @db.VarChar(500)
+  authorId     Int       @map("author_id")
+  isPublished  Boolean   @default(false) @map("is_published")
+  publishedAt  DateTime? @map("published_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  author       User      @relation(fields: [authorId], references: [id])
+
+  @@map("articles")
+}
+
+// ==========================================
+// CONTACTS
+// ==========================================
+
+model Contact {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(100)
+  email     String   @db.VarChar(255)
+  phone     String?  @db.VarChar(20)
+  subject   String?  @db.VarChar(200)
+  message   String   @db.Text
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("contacts")
+}
+
+// ==========================================
+// NOTIFICATIONS
+// ==========================================
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  title     String   @db.VarChar(200)
+  message   String?  @db.Text
+  type      String?  @db.VarChar(50)
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
