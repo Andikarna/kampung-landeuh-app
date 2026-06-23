@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { formatCurrency } from "@/lib/utils";
-import { Search, Loader2, FileText, CheckCircle2, Clock, XCircle, Eye, Check, X, MoreHorizontal } from "lucide-react";
+import { Search, Loader2, FileText, CheckCircle2, Clock, XCircle, Eye, Check, X, MoreHorizontal, Phone, Save } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -13,7 +15,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -35,6 +36,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
+const WHATSAPP_NUMBER_KEY = "whatsapp_number";
+
 const STATUS_MAP: Record<string, string> = {
   pending: "Menunggu",
   confirmed: "Dikonfirmasi",
@@ -47,6 +50,9 @@ export default function AdminBookingsPage() {
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [actionType, setActionType] = useState<string | null>(null);
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [isSavingWa, setIsSavingWa] = useState(false);
+  const [isWaSuccess, setIsWaSuccess] = useState(false);
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError } = useQuery({
@@ -56,6 +62,43 @@ export default function AdminBookingsPage() {
       return res.data.data;
     },
   });
+
+  const { data: settingsData } = useQuery({
+    queryKey: ["settings"],
+    queryFn: async () => {
+      const res = await api.get("/settings");
+      return res.data.data;
+    },
+  });
+
+  useEffect(() => {
+    if (settingsData) {
+      const waSetting = settingsData.find((s: any) => s.key === WHATSAPP_NUMBER_KEY);
+      if (waSetting) setWhatsappNumber(waSetting.value);
+    }
+  }, [settingsData]);
+
+  const updateWaMutation = useMutation({
+    mutationFn: async (value: string) => {
+      await api.post("/settings", { key: WHATSAPP_NUMBER_KEY, value });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["settings"] });
+      setIsWaSuccess(true);
+      setTimeout(() => setIsWaSuccess(false), 3000);
+    },
+  });
+
+  const handleSaveWa = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!whatsappNumber) return;
+    setIsSavingWa(true);
+    try {
+      await updateWaMutation.mutateAsync(whatsappNumber);
+    } finally {
+      setIsSavingWa(false);
+    }
+  };
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
@@ -125,6 +168,47 @@ export default function AdminBookingsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight font-heading">Daftar Reservasi</h1>
         <p className="text-muted-foreground mt-1">Pantau tiket wisata yang dipesan oleh pengunjung.</p>
+      </div>
+
+      {/* Card Pengaturan Nomor WhatsApp */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border shadow-sm p-6 max-w-xl">
+        <h2 className="text-lg font-semibold mb-1 flex items-center gap-2">
+          <Phone className="w-5 h-5 text-green-600" />
+          Nomor WhatsApp Pembayaran
+        </h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Nomor ini digunakan pengunjung untuk menghubungi admin saat membayar reservasi.
+        </p>
+        <form onSubmit={handleSaveWa} className="flex items-end gap-3">
+          <div className="flex-1 space-y-1">
+            <Label htmlFor="wa-number-reservasi">Nomor WhatsApp</Label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                id="wa-number-reservasi"
+                type="tel"
+                placeholder="6282211129043"
+                value={whatsappNumber}
+                onChange={(e) => setWhatsappNumber(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">Format: kode negara + nomor (contoh: 6282211129043)</p>
+          </div>
+          <div className="flex items-center gap-2 pb-0.5">
+            <Button type="submit" disabled={isSavingWa || !whatsappNumber}>
+              {isSavingWa ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4 mr-2" />
+              )}
+              Simpan
+            </Button>
+            {isWaSuccess && (
+              <span className="text-sm text-green-600 font-medium whitespace-nowrap">Tersimpan!</span>
+            )}
+          </div>
+        </form>
       </div>
 
       <div className="bg-white dark:bg-slate-900 rounded-xl border shadow-sm">

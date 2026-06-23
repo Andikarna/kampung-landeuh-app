@@ -15,14 +15,16 @@ export default function EditGalleryPage({ params }: { params: Promise<{ id: stri
 
   const [formData, setFormData] = useState({
     title: "",
-    description: "",
-    mediaUrl: "",
     mediaType: "photo",
     isFeatured: false,
+    sortOrder: "0",
+    destinationId: "",
   });
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [error, setError] = useState("");
 
-  const { data: gallery, isLoading } = useQuery({
+  const { data: gallery, isLoading: galleryLoading } = useQuery({
     queryKey: ["gallery", id],
     queryFn: async () => {
       const res = await api.get("/galleries");
@@ -32,21 +34,48 @@ export default function EditGalleryPage({ params }: { params: Promise<{ id: stri
     },
   });
 
+  const { data: destinations } = useQuery({
+    queryKey: ["admin-destinations"],
+    queryFn: async () => {
+      const res = await api.get("/destinations");
+      return res.data.data;
+    }
+  });
+
   useEffect(() => {
     if (gallery) {
       setFormData({
         title: gallery.title || "",
-        description: gallery.description || "",
-        mediaUrl: gallery.mediaUrl || "",
         mediaType: gallery.mediaType || "photo",
         isFeatured: gallery.isFeatured || false,
+        sortOrder: String(gallery.sortOrder || 0),
+        destinationId: gallery.destinationId ? String(gallery.destinationId) : "",
       });
+      if (gallery.mediaUrl) {
+        setMediaPreview(gallery.mediaUrl);
+      }
     }
   }, [gallery]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setMediaFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setMediaPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const mutation = useMutation({
-    mutationFn: async (data: any) => {
-      const res = await api.put(`/galleries/${id}`, data);
+    mutationFn: async (formDataToSend: FormData) => {
+      const res = await api.put(`/galleries/${id}`, formDataToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return res.data;
     },
     onSuccess: () => {
@@ -60,14 +89,23 @@ export default function EditGalleryPage({ params }: { params: Promise<{ id: stri
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.mediaUrl) {
-      setError("URL Media wajib diisi");
-      return;
+
+    const formDataToSend = new FormData();
+    formDataToSend.append("title", formData.title);
+    formDataToSend.append("mediaType", formData.mediaType);
+    formDataToSend.append("isFeatured", String(formData.isFeatured));
+    formDataToSend.append("sortOrder", formData.sortOrder);
+    if (formData.destinationId) {
+      formDataToSend.append("destinationId", formData.destinationId);
     }
-    mutation.mutate(formData);
+    if (mediaFile) {
+      formDataToSend.append("mediaFile", mediaFile);
+    }
+
+    mutation.mutate(formDataToSend);
   };
 
-  if (isLoading) {
+  if (galleryLoading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -96,6 +134,29 @@ export default function EditGalleryPage({ params }: { params: Promise<{ id: stri
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
+            <label className="text-sm font-medium">Unggah Media (Opsional)</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+              <div className="space-y-2">
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  onChange={handleFileChange}
+                  className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
+                />
+              </div>
+              {mediaPreview && (
+                <div className="relative rounded-lg overflow-hidden border">
+                  {formData.mediaType === "video" ? (
+                    <video src={mediaPreview} className="w-full h-40 object-cover" controls />
+                  ) : (
+                    <img src={mediaPreview} alt="Preview" className="w-full h-40 object-cover" />
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-2">
             <label className="text-sm font-medium">Judul Media (Opsional)</label>
             <input
               type="text"
@@ -107,14 +168,43 @@ export default function EditGalleryPage({ params }: { params: Promise<{ id: stri
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">URL Media <span className="text-red-500">*</span></label>
-            <input
-              type="text"
+            <label className="text-sm font-medium">Destinasi (Opsional)</label>
+            <select
               className="w-full p-3 rounded-lg border bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-primary outline-none"
-              placeholder="https://..."
-              value={formData.mediaUrl}
-              onChange={(e) => setFormData({ ...formData, mediaUrl: e.target.value })}
-            />
+              value={formData.destinationId}
+              onChange={(e) => setFormData({ ...formData, destinationId: e.target.value })}
+            >
+              <option value="">Tidak terkait destinasi</option>
+              {destinations?.map((d: any) => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Tipe Media</label>
+              <select
+                className="w-full p-3 rounded-lg border bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-primary outline-none"
+                value={formData.mediaType}
+                onChange={(e) => setFormData({ ...formData, mediaType: e.target.value })}
+              >
+                <option value="photo">Foto</option>
+                <option value="video">Video</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Urutan</label>
+              <input
+                type="number"
+                min="0"
+                className="w-full p-3 rounded-lg border bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-primary outline-none"
+                placeholder="0"
+                value={formData.sortOrder}
+                onChange={(e) => setFormData({ ...formData, sortOrder: e.target.value })}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

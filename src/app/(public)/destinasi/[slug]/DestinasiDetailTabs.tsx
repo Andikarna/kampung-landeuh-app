@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Star, MapPin, Loader2, CheckCircle2 } from "lucide-react";
-import { FACILITIES_LIST } from "@/lib/constants";
+import { Star, Loader2, CheckCircle2 } from "lucide-react";
+
 import { useAuth } from "@/providers/AuthProvider";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -102,16 +102,7 @@ export default function DestinasiDetailTabs({ dest, averageRating, userReview }:
               </div>
             </div>
 
-            <div>
-              <h3 className="text-xl font-bold font-heading mb-4">Lokasi Peta</h3>
-              <div className="aspect-video bg-slate-200 rounded-xl overflow-hidden relative border flex items-center justify-center">
-                {/* Leaflet map placeholder */}
-                <div className="text-center">
-                  <MapPin className="w-12 h-12 text-slate-400 mx-auto mb-2" />
-                  <p className="text-slate-500 font-medium">Peta Interaktif Dimuat...</p>
-                </div>
-              </div>
-            </div>
+
           </div>
         )}
 
@@ -119,7 +110,7 @@ export default function DestinasiDetailTabs({ dest, averageRating, userReview }:
           <div className="grid grid-cols-2 gap-4">
             {dest.galleries?.map((img: any) => (
               <div key={img.id} className="aspect-square rounded-xl overflow-hidden cursor-pointer">
-                <img src={img.url} alt={img.title || "Gallery"} className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
+                <img src={img.mediaUrl} alt={img.title || "Gallery"} className="w-full h-full object-cover hover:scale-110 transition-transform duration-500" />
               </div>
             ))}
             {(!dest.galleries || dest.galleries.length === 0) && (

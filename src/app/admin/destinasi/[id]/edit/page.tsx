@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, use } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,13 +19,15 @@ const destinationSchema = z.object({
   description: z.string().min(10, "Deskripsi minimal 10 karakter"),
   price: z.number().min(0, "Harga tidak boleh negatif"),
   location: z.string().min(3, "Lokasi wajib diisi"),
+  status: z.string().optional(),
   facilityIds: z.array(z.number()).optional(),
 });
 
 type DestinationInput = z.infer<typeof destinationSchema>;
 
-export default function TambahDestinasiPage() {
+export default function EditDestinasiPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const { id } = use(params);
   const [error, setError] = useState<string | null>(null);
   const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
@@ -46,19 +48,25 @@ export default function TambahDestinasiPage() {
     }
   });
 
+  const { data: destination, isLoading: destLoading } = useQuery({
+    queryKey: ["destination", id],
+    queryFn: async () => {
+      const res = await api.get("/destinations");
+      const found = res.data.data.find((d: any) => d.id === Number(id));
+      if (!found) throw new Error("Destinasi tidak ditemukan");
+      return found;
+    }
+  });
+
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    reset,
     setValue,
     watch,
   } = useForm<DestinationInput>({
     resolver: zodResolver(destinationSchema),
-    defaultValues: {
-      price: 0,
-      categoryId: 1, // Default to Alam
-      facilityIds: [],
-    }
   });
 
   const selectedFacilityIds = watch("facilityIds", []);
@@ -71,6 +79,24 @@ export default function TambahDestinasiPage() {
       setValue("facilityIds", [...current, facilityId]);
     }
   };
+
+  useEffect(() => {
+    if (destination) {
+      const existingFacilityIds = destination.destinationFacilities?.map((df: any) => df.facilityId) || [];
+      reset({
+        name: destination.name,
+        categoryId: destination.categoryId,
+        description: destination.description,
+        price: Number(destination.ticketPrice),
+        location: destination.location,
+        status: destination.status || "active",
+        facilityIds: existingFacilityIds,
+      });
+      if (destination.coverImage) {
+        setCoverImagePreview(destination.coverImage);
+      }
+    }
+  }, [destination, reset]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -95,9 +121,10 @@ export default function TambahDestinasiPage() {
       formData.append("price", String(data.price));
       formData.append("categoryId", String(data.categoryId));
       formData.append("location", data.location);
+      if (data.status) formData.append("status", data.status);
       
       // Add facility ids
-      if (data.facilityIds && data.facilityIds.length > 0) {
+      if (data.facilityIds) {
         formData.append("facilityIds", JSON.stringify(data.facilityIds));
       }
       
@@ -106,16 +133,24 @@ export default function TambahDestinasiPage() {
         formData.append("coverImage", coverImageFile);
       }
 
-      await api.post("/destinations", formData, {
+      await api.put(`/destinations/${id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
       router.push("/admin/destinasi");
     } catch (err: any) {
-      setError(err.response?.data?.error || "Gagal menyimpan destinasi");
+      setError(err.response?.data?.error || "Gagal memperbarui destinasi");
     }
   };
+
+  if (destLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -124,8 +159,8 @@ export default function TambahDestinasiPage() {
           <ArrowLeft className="w-4 h-4" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Tambah Destinasi</h1>
-          <p className="text-muted-foreground text-sm">Tambahkan destinasi wisata baru ke dalam sistem.</p>
+          <h1 className="text-2xl font-bold tracking-tight">Edit Destinasi</h1>
+          <p className="text-muted-foreground text-sm">Perbarui informasi destinasi wisata.</p>
         </div>
       </div>
 
@@ -234,7 +269,7 @@ export default function TambahDestinasiPage() {
             <Link href="/admin/destinasi" className={buttonVariants({ variant: "outline" })}>Batal</Link>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-              Simpan Destinasi
+              Perbarui Destinasi
             </Button>
           </div>
         </form>

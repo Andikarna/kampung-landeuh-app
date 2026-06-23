@@ -21,6 +21,7 @@ export const ADMIN_NAV_LINKS = [
   { href: "/admin/ulasan", label: "Ulasan", icon: "Star" },
   { href: "/admin/pengguna", label: "Pengguna", icon: "Users" },
   { href: "/admin/kontak", label: "Pesan Kontak", icon: "Mail" },
+  { href: "/admin/pengaturan", label: "Pengaturan", icon: "Settings" },
 ] as const;
 
 export const DESTINATION_CATEGORIES = [

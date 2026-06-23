@@ -31,13 +31,21 @@ export default function BookingHistoryPage() {
     }
   }, [user, loading, router]);
 
-  const { data: historyData, isLoading } = useQuery({
+  const { data: historyData, isLoading: isLoadingBookings } = useQuery({
     queryKey: ["my-bookings"],
     queryFn: async () => {
       const res = await api.get("/bookings/me");
       return res.data.data;
     },
     enabled: !!user,
+  });
+
+  const { data: settingsData } = useQuery({
+    queryKey: ["settings"],
+    queryFn: async () => {
+      const res = await api.get("/settings");
+      return res.data.data;
+    },
   });
 
   const bookings = historyData || [];
@@ -48,14 +56,17 @@ export default function BookingHistoryPage() {
     return encodeURIComponent(message);
   };
 
+  const whatsappNumber =
+    settingsData?.find((s: any) => s.key === "whatsapp_number")?.value ||
+    "6282211129043";
+
   const handleWhatsAppPayment = (booking: any) => {
-    const phoneNumber = "6282211129043"; // Format: kode negara + nomor tanpa awalan 0
     const message = generateWhatsAppMessage(booking);
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
     window.open(whatsappUrl, "_blank");
   };
 
-  if (loading || isLoading || !user) {
+  if (loading || isLoadingBookings || !user) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
