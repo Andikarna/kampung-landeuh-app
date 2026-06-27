@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Search, MapPin, Filter, ArrowRight, Star } from "lucide-react";
-import { DESTINATION_CATEGORIES } from "@/lib/constants";
+import { Search, MapPin, ArrowRight, Star } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-
 import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
 
 interface Destination {
   id: number;
@@ -19,20 +19,34 @@ interface Destination {
   totalReviews: number;
 }
 
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  icon: string | null;
+}
+
 export default function DestinationsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("Semua");
-  const [destinations, setDestinations] = useState<Destination[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetch("/api/destinations")
-      .then((res) => res.json())
-      .then((res) => {
-        if (res.success) setDestinations(res.data);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: destinations = [], isLoading: loadingDest } = useQuery({
+    queryKey: ["public-destinations-list"],
+    queryFn: async () => {
+      const res = await api.get("/destinations");
+      return res.data.data as Destination[];
+    },
+  });
+
+  const { data: categories = [], isLoading: loadingCat } = useQuery({
+    queryKey: ["destination-categories"],
+    queryFn: async () => {
+      const res = await api.get("/destination-categories");
+      return res.data.data as Category[];
+    },
+  });
+
+  const loading = loadingDest || loadingCat;
 
   const filteredDestinations = destinations.filter(dest => {
     const matchesSearch = dest.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -76,9 +90,9 @@ export default function DestinationsPage() {
             >
               Semua
             </button>
-            {DESTINATION_CATEGORIES.map((cat) => (
+            {categories.map((cat) => (
               <button
-                key={cat.slug}
+                key={cat.id}
                 onClick={() => setActiveCategory(cat.name)}
                 className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                   activeCategory === cat.name
@@ -86,7 +100,8 @@ export default function DestinationsPage() {
                     : "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700"
                 }`}
               >
-                <span>{cat.icon}</span> {cat.name}
+                {cat.icon && <span>{cat.icon}</span>}
+                {cat.name}
               </button>
             ))}
           </div>
@@ -99,7 +114,7 @@ export default function DestinationsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredDestinations.map((dest) => (
-              <div 
+              <div
                 key={dest.id}
                 className="group flex flex-col bg-background rounded-2xl overflow-hidden border shadow-sm hover:shadow-md transition-all"
               >
@@ -123,11 +138,11 @@ export default function DestinationsPage() {
                     <div>
                       <span className="text-xs text-muted-foreground block">Mulai dari</span>
                       <span className="font-bold text-primary text-lg">
-                        {dest.ticketPrice === 0 ? "Gratis" : formatCurrency(dest.ticketPrice)}
+                        {Number(dest.ticketPrice) === 0 ? "Gratis" : formatCurrency(Number(dest.ticketPrice))}
                       </span>
                     </div>
-                    <Link 
-                      href={`/destinasi/${dest.slug}`} 
+                    <Link
+                      href={`/destinasi/${dest.slug}`}
                       className="inline-flex items-center justify-center rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors p-2"
                     >
                       <ArrowRight className="w-5 h-5" />
@@ -143,8 +158,8 @@ export default function DestinationsPage() {
           <div className="text-center py-20 bg-background rounded-xl border border-dashed">
             <h3 className="text-xl font-bold mb-2">Destinasi Tidak Ditemukan</h3>
             <p className="text-muted-foreground">Coba gunakan kata kunci lain atau pilih kategori yang berbeda.</p>
-            <button 
-              onClick={() => {setSearchQuery(""); setActiveCategory("Semua");}}
+            <button
+              onClick={() => { setSearchQuery(""); setActiveCategory("Semua"); }}
               className="mt-4 px-4 py-2 bg-primary text-white rounded-md text-sm font-medium hover:bg-primary/90"
             >
               Reset Filter

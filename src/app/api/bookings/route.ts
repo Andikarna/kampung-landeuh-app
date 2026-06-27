@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     const session = await requireAuth();
     const body = await req.json();
 
-    const { destinationId, visitDate, numberOfVisitors, notes } = body;
+    const { destinationId, visitDate, endDate, numberOfVisitors, notes } = body;
 
     // Get destination to calculate total price
     const destination = await prisma.destination.findUnique({
@@ -46,7 +46,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "Destinasi tidak ditemukan" }, { status: 404 });
     }
 
-    const totalPrice = Number(destination.ticketPrice) * Number(numberOfVisitors);
+    // Calculate number of days (min 1)
+    const start = new Date(visitDate);
+    const end = endDate ? new Date(endDate) : null;
+    const days = end && end > start
+      ? Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1
+      : 1;
+
+    const totalPrice = Number(destination.ticketPrice) * Number(numberOfVisitors) * days;
     const bookingNumber = generateBookingNumber();
 
     const booking = await prisma.booking.create({
@@ -54,7 +61,8 @@ export async function POST(req: Request) {
         bookingNumber,
         userId: session.userId,
         destinationId: Number(destinationId),
-        visitDate: new Date(visitDate),
+        visitDate: start,
+        endDate: end,
         numberOfVisitors: Number(numberOfVisitors),
         totalPrice,
         status: "pending",

@@ -16,7 +16,8 @@ import {
   Users, 
   Mail,
   LogOut,
-  Settings
+  Settings,
+  Tag
 } from "lucide-react";
 
 // Icon mapping based on strings in constants
@@ -30,7 +31,8 @@ const iconMap: Record<string, any> = {
   Star,
   Users,
   Mail,
-  Settings
+  Settings,
+  Tag
 };
 
 export function AdminSidebar() {

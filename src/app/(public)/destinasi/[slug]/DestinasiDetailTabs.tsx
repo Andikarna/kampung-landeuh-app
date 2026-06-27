@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { reviewSchema, type ReviewInput } from "@/schemas";
 import api from "@/lib/api";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function DestinasiDetailTabs({ dest, averageRating, userReview }: { dest: any, averageRating: number, userReview?: any }) {
   const [activeTab, setActiveTab] = useState("deskripsi");
@@ -17,6 +18,7 @@ export default function DestinasiDetailTabs({ dest, averageRating, userReview }:
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const { user } = useAuth();
+  const router = useRouter();
 
   const {
     register,
@@ -41,7 +43,10 @@ export default function DestinasiDetailTabs({ dest, averageRating, userReview }:
       setSuccess(true);
       reset();
       setRating(0);
-      setTimeout(() => setSuccess(false), 5000);
+      // Refresh halaman agar ulasan (pending approval) dan status "sudah review" terupdate
+      setTimeout(() => {
+        router.refresh();
+      }, 2000);
     } catch (error: any) {
       alert(error.response?.data?.error || "Gagal mengirim ulasan");
     } finally {

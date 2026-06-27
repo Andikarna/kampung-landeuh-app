@@ -162,6 +162,7 @@ model Booking {
   userId           Int         @map("user_id")
   destinationId    Int         @map("destination_id")
   visitDate        DateTime    @map("visit_date") @db.Date
+  endDate          DateTime?   @map("end_date") @db.Date
   numberOfVisitors Int         @default(1) @map("number_of_visitors")
   totalPrice       Decimal     @map("total_price") @db.Decimal(12, 2)
   status           String      @default("pending") @db.VarChar(20)

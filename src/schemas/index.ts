@@ -50,6 +50,7 @@ export const contactSchema = z.object({
 export const bookingSchema = z.object({
   destinationId: z.number().min(1, "Pilih destinasi"),
   visitDate: z.string().min(1, "Tanggal kunjungan wajib diisi"),
+  endDate: z.string().optional(),
   numberOfVisitors: z
     .number()
     .min(1, "Minimal 1 pengunjung")

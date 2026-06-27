@@ -38,6 +38,8 @@ function BookingFormContent() {
 
   const selectedDestId = watch("destinationId");
   const numberOfVisitors = watch("numberOfVisitors");
+  const visitDate = watch("visitDate");
+  const endDate = watch("endDate");
   
   const { data: destinationsData, isLoading: isLoadingDestinations } = useQuery({
     queryKey: ["public-destinations"],
@@ -50,7 +52,17 @@ function BookingFormContent() {
   const destinations = destinationsData || [];
   
   const selectedDest = destinations.find((d: any) => d.id === Number(selectedDestId));
-  const totalPrice = (selectedDest?.ticketPrice || 0) * (numberOfVisitors || 1);
+
+  // Calculate days
+  const days = (() => {
+    if (!visitDate || !endDate) return 1;
+    const start = new Date(visitDate);
+    const end = new Date(endDate);
+    if (end <= start) return 1;
+    return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  })();
+
+  const totalPrice = (selectedDest?.ticketPrice || 0) * (numberOfVisitors || 1) * days;
 
   const mutation = useMutation({
     mutationFn: async (data: BookingInput) => {
@@ -154,9 +166,9 @@ function BookingFormContent() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {/* Date */}
+                  {/* Start Date */}
                   <div className="space-y-3">
-                    <label className="text-sm font-semibold">Tanggal Kunjungan</label>
+                    <label className="text-sm font-semibold">Tanggal Mulai Kunjungan</label>
                     <div className="relative">
                       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                       <input
@@ -167,6 +179,21 @@ function BookingFormContent() {
                       />
                     </div>
                     {errors.visitDate && <p className="text-xs text-destructive">{errors.visitDate.message}</p>}
+                  </div>
+
+                  {/* End Date */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-semibold">Tanggal Selesai <span className="text-muted-foreground font-normal">(Opsional)</span></label>
+                    <div className="relative">
+                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <input
+                        {...register("endDate")}
+                        type="date"
+                        min={visitDate || new Date().toISOString().split('T')[0]}
+                        className="w-full pl-10 pr-4 py-3 rounded-lg border border-input bg-background focus:ring-2 focus:ring-primary outline-none"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">Kosongkan jika hanya 1 hari</p>
                   </div>
 
                   {/* Visitors */}
@@ -220,8 +247,13 @@ function BookingFormContent() {
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Harga Tiket</span>
                   <span className="font-medium text-right">
-                    {selectedDest ? (selectedDest.ticketPrice === 0 ? "Gratis" : formatCurrency(selectedDest.ticketPrice)) : "-"}
+                    {selectedDest ? (Number(selectedDest.ticketPrice) === 0 ? "Gratis" : formatCurrency(Number(selectedDest.ticketPrice))) : "-"}
                   </span>
+                </div>
+
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Durasi</span>
+                  <span className="font-medium text-right">{days} Hari</span>
                 </div>
                 
                 <div className="flex justify-between text-sm">

@@ -68,7 +68,7 @@ export default function KontakPage() {
                   </div>
                   <div>
                     <h4 className="font-semibold mb-1">Alamat</h4>
-                    <p className="text-sm text-muted-foreground">Jl. Pariwisata No. 123, Desa Kampung Landeuh, Kecamatan Alam Sari, Jawa Barat 40562</p>
+                    <p className="text-sm text-muted-foreground">Jl. Raya Ciboleger, Bojong Menteng, Kec. Leuwidamar, Kabupaten Lebak, Banten 42362</p>
                   </div>
                 </div>
 
@@ -104,11 +104,31 @@ export default function KontakPage() {
               </div>
             </div>
             
-            {/* Dummy Map Placeholder */}
-            <div className="bg-slate-200 dark:bg-slate-800 rounded-2xl h-64 border shadow-sm flex items-center justify-center overflow-hidden relative group">
-              <div className="absolute inset-0 bg-[url('https://picsum.photos/seed/map-placeholder/1000/800')] bg-cover bg-center opacity-50 grayscale group-hover:grayscale-0 transition-all duration-500"></div>
-              <div className="relative bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm px-4 py-2 rounded-lg text-sm font-semibold shadow flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-primary" /> Lihat di Google Maps
+            {/* Google Maps Embed */}
+            <div className="bg-slate-200 dark:bg-slate-800 rounded-2xl border shadow-sm overflow-hidden">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.5778979695683!2d106.197937!3d-6.574834!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e42693435733a57%3A0xa4db0a15fa983216!2sKampung%20Edu%20Wisata%20Landeuh!5e0!3m2!1sid!2sid!4v1782534637596!5m2!1sid!2sid"
+                width="100%"
+                height="256"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Lokasi Kampung Edu Wisata Landeuh"
+              />
+              <div className="p-3 flex items-center justify-between bg-white dark:bg-slate-900 border-t">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <MapPin className="w-4 h-4 text-primary" />
+                  <span>Kampung Edu Wisata Landeuh</span>
+                </div>
+                <a
+                  href="https://www.google.com/maps/place/Kampung+Edu+Wisata+Landeuh/@-6.574834,106.197937,17z"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-primary hover:underline"
+                >
+                  Buka di Google Maps
+                </a>
               </div>
             </div>
           </div>

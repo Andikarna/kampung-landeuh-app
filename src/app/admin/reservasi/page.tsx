@@ -258,7 +258,14 @@ export default function AdminBookingsPage() {
                       <div className="text-xs text-muted-foreground">{item.user.phone || item.user.email}</div>
                     </TableCell>
                     <TableCell className="font-medium">{item.destination.name}</TableCell>
-                    <TableCell>{new Date(item.visitDate).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}</TableCell>
+                    <TableCell>
+                      {new Date(item.visitDate).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                      {item.endDate && (
+                        <span className="block text-xs text-muted-foreground">
+                          s/d {new Date(item.endDate).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                        </span>
+                      )}
+                    </TableCell>
                     <TableCell>{item.numberOfVisitors} Orang</TableCell>
                     <TableCell>{formatCurrency(item.totalPrice)}</TableCell>
                     <TableCell>{getStatusBadge(item.status)}</TableCell>
@@ -352,6 +359,11 @@ export default function AdminBookingsPage() {
                   {new Date(selectedBooking.visitDate).toLocaleDateString("id-ID", { 
                   weekday: "long", day: "numeric", month: "long", year: "numeric" 
                 })}
+                  {selectedBooking.endDate && (
+                    <span className="block text-sm text-muted-foreground">
+                      s/d {new Date(selectedBooking.endDate).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                    </span>
+                  )}
                 </p>
               </div>
               <div>

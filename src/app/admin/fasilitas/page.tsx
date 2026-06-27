@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import Link from "next/link";
 import { Plus, Edit, Trash2, Building, Loader2 } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 import {
   Table,
   TableBody,
@@ -97,7 +98,10 @@ export default function AdminFacilitiesPage() {
                   <TableRow key={item.id}>
                     <TableCell>
                       <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                        <Building className="w-5 h-5" />
+                        {(() => {
+                          const IconComp = item.icon ? (LucideIcons as any)[item.icon] : null;
+                          return IconComp ? <IconComp className="w-5 h-5" /> : <Building className="w-5 h-5" />;
+                        })()}
                       </div>
                     </TableCell>
                     <TableCell className="font-medium">{item.name}</TableCell>

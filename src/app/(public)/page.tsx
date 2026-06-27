@@ -42,7 +42,7 @@ export default function HomePage() {
           >
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-medium mb-4">
               <Sparkles className="w-4 h-4 text-accent" />
-              <span>Desa Wisata Pilihan #1 di Jawa Barat</span>
+              <span>Kampung Edu Wisata di Kabupaten Lebak, Banten</span>
             </div>
             <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tight font-heading">
               Eksplorasi Keajaiban <br/>
@@ -51,7 +51,7 @@ export default function HomePage() {
               </span>
             </h1>
             <p className="text-lg md:text-xl text-slate-200 font-light max-w-2xl mx-auto">
-              Temukan pengalaman wisata alam yang otentik, kekayaan budaya lokal, dan harmoni kehidupan desa yang menenangkan jiwa.
+              Wisata edukasi, spiritual, dan budaya di Desa Bojong Menteng, Kecamatan Leuwidamar, Kabupaten Lebak, Banten. Rasakan pengalaman unik bersama komunitas Baduy mualaf dalam lingkungan pedesaan yang asri dan bermakna.
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
@@ -98,6 +98,84 @@ export default function HomePage() {
                 <p className="text-muted-foreground text-sm">{stat.label}</p>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ABOUT SECTION */}
+      <section className="py-24 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+                <MapPin className="w-4 h-4" />
+                Kab. Lebak, Banten
+              </div>
+              <h2 className="text-3xl md:text-4xl font-bold font-heading mb-6">
+                Tentang Kampung Edu Wisata Landeuh
+              </h2>
+              <div className="space-y-4 text-muted-foreground leading-relaxed">
+                <p>
+                  Kampung Edu Wisata Landeuh adalah sebuah kampung yang terletak di Desa Bojong Menteng, Kecamatan Leuwidamar, Kabupaten Lebak, Banten. Kampung ini dihuni oleh warga Baduy yang telah menganut agama Islam (mualaf) dan difasilitasi oleh Yayasan At Taubah 60.
+                </p>
+                <p>
+                  Yayasan At Taubah 60 yang berbasis di BSD Tangerang membangun 45 rumah untuk 27 Kartu Keluarga di lahan seluas lima hektar. Kampung ini telah berdiri selama enam tahun dan kini berkembang menjadi destinasi wisata edukasi, spiritual, dan budaya yang unik.
+                </p>
+                <p>
+                  Dengan konsep wisata berbasis masyarakat, setiap kunjungan berkontribusi langsung pada peningkatan kesejahteraan warga Baduy mualaf dan pelestarian budaya lokal yang autentik.
+                </p>
+              </div>
+              <div className="mt-8 grid grid-cols-2 gap-4">
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border">
+                  <p className="text-xs text-muted-foreground mb-1">Lokasi</p>
+                  <p className="font-semibold text-sm">Kab. Lebak, Banten</p>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border">
+                  <p className="text-xs text-muted-foreground mb-1">Jam Operasional</p>
+                  <p className="font-semibold text-sm">07.00 – 17.00 WIB</p>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border">
+                  <p className="text-xs text-muted-foreground mb-1">Jenis Wisata</p>
+                  <p className="font-semibold text-sm">Edukasi, Spiritual & Budaya</p>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border">
+                  <p className="text-xs text-muted-foreground mb-1">Cocok Untuk</p>
+                  <p className="font-semibold text-sm">Keluarga & Pelajar</p>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="relative"
+            >
+              <div className="rounded-2xl overflow-hidden shadow-2xl aspect-[4/3]">
+                <img
+                  src="https://picsum.photos/seed/landeuh-about/1200/900"
+                  alt="Kampung Edu Wisata Landeuh"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="absolute -bottom-6 -left-6 bg-white dark:bg-slate-900 rounded-xl p-4 shadow-xl border">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                    <Star className="w-6 h-6 text-primary fill-primary" />
+                  </div>
+                  <div>
+                    <p className="font-bold text-lg">4.8 / 5</p>
+                    <p className="text-xs text-muted-foreground">Rating Pengunjung</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>

@@ -7,6 +7,7 @@ import api from "@/lib/api";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { IconPicker } from "@/components/ui/icon-picker";
 
 export default function EditFacilityPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -103,16 +104,11 @@ export default function EditFacilityPage({ params }: { params: Promise<{ id: str
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Ikon (Lucide Icon Name)</label>
-            <input
-              type="text"
-              className="w-full p-3 rounded-lg border bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-primary outline-none"
-              placeholder="Contoh: Building, Car, Bath"
-              value={formData.icon}
-              onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-            />
-          </div>
+          <IconPicker
+            value={formData.icon}
+            onChange={(icon) => setFormData({ ...formData, icon })}
+            label="Ikon Fasilitas"
+          />
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Deskripsi</label>

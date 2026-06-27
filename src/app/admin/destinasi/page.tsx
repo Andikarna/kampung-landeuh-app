@@ -32,7 +32,7 @@ interface Destination {
   id: number;
   name: string;
   category: { name: string };
-  price: number;
+  ticketPrice: number;
   location: string;
   viewCount: number;
   status: string;
@@ -127,7 +127,7 @@ export default function AdminDestinationsPage() {
                         {item.location}
                       </div>
                     </TableCell>
-                    <TableCell>{item.price === 0 ? "Gratis" : formatCurrency(item.price)}</TableCell>
+                    <TableCell>{Number(item.ticketPrice) === 0 ? "Gratis" : formatCurrency(Number(item.ticketPrice))}</TableCell>
                     <TableCell>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                         Aktif

@@ -51,7 +51,11 @@ export default function BookingHistoryPage() {
   const bookings = historyData || [];
 
   const generateWhatsAppMessage = (booking: any) => {
-    const message = `Halo Admin, saya ingin melakukan pembayaran untuk reservasi tiket wisata dengan detail berikut:\n\n*Kode Reservasi:* ${booking.bookingNumber}\n*Nama Pemesan:* ${user?.fullName || ''}\n*Email:* ${user?.email || ''}\n*Telepon:* ${user?.phone || ''}\n\n*Detail Reservasi:*\n*Destinasi:* ${booking.destination.name}\n*Tanggal Kunjungan:* ${new Date(booking.visitDate).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}\n*Jumlah Pengunjung:* ${booking.numberOfVisitors} Orang\n*Total Pembayaran:* ${formatCurrency(booking.totalPrice)}\n\nMohon bantu untuk proses pembayaran selanjutnya. Terima kasih!`;
+    const dateRange = booking.endDate
+      ? `${new Date(booking.visitDate).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })} s/d ${new Date(booking.endDate).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}`
+      : new Date(booking.visitDate).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+
+    const message = `Halo Admin, saya ingin melakukan pembayaran untuk reservasi tiket wisata dengan detail berikut:\n\n*Kode Reservasi:* ${booking.bookingNumber}\n*Nama Pemesan:* ${user?.fullName || ''}\n*Email:* ${user?.email || ''}\n*Telepon:* ${user?.phone || ''}\n\n*Detail Reservasi:*\n*Destinasi:* ${booking.destination.name}\n*Tanggal Kunjungan:* ${dateRange}\n*Jumlah Pengunjung:* ${booking.numberOfVisitors} Orang\n*Total Pembayaran:* ${formatCurrency(booking.totalPrice)}\n\nMohon bantu untuk proses pembayaran selanjutnya. Terima kasih!`;
     
     return encodeURIComponent(message);
   };
@@ -122,7 +126,12 @@ export default function BookingHistoryPage() {
                     <div className="grid grid-cols-2 gap-y-2 gap-x-4">
                       <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                         <Calendar className="w-4 h-4 text-primary" />
-                        <span>{new Date(booking.visitDate).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}</span>
+                        <span>
+                          {new Date(booking.visitDate).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}
+                          {booking.endDate && (
+                            <> &ndash; {new Date(booking.endDate).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}</>
+                          )}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                         <Users className="w-4 h-4 text-primary" />
@@ -209,6 +218,11 @@ export default function BookingHistoryPage() {
                       {new Date(selectedBooking.visitDate).toLocaleDateString("id-ID", { 
                       weekday: "long", day: "numeric", month: "long", year: "numeric" 
                     })}
+                      {selectedBooking.endDate && (
+                        <span className="block text-sm text-muted-foreground">
+                          s/d {new Date(selectedBooking.endDate).toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
+                        </span>
+                      )}
                     </p>
                   </div>
                   <div>

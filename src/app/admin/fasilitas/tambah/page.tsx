@@ -7,6 +7,7 @@ import api from "@/lib/api";
 import Link from "next/link";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { IconPicker } from "@/components/ui/icon-picker";
 
 export default function AddFacilityPage() {
   const router = useRouter();
@@ -47,7 +48,7 @@ export default function AddFacilityPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-bold tracking-tight font-heading">Tambah Fasilitas</h1>
-          <p className="text-muted-foreground text-sm mt-1">Tambahkan fasilitas baru untuk Kampung Landeuh.</p>
+          <p className="text-muted-foreground text-sm mt-1">Tambahkan fasilitas baru untuk Kampung Edu Wisata Landeuh.</p>
         </div>
       </div>
 
@@ -70,17 +71,11 @@ export default function AddFacilityPage() {
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Ikon (Lucide Icon Name)</label>
-            <input
-              type="text"
-              className="w-full p-3 rounded-lg border bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-primary outline-none"
-              placeholder="Contoh: Building, Car, Bath"
-              value={formData.icon}
-              onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-            />
-            <p className="text-xs text-muted-foreground">Isikan dengan nama icon dari Lucide React.</p>
-          </div>
+          <IconPicker
+            value={formData.icon}
+            onChange={(icon) => setFormData({ ...formData, icon })}
+            label="Ikon Fasilitas"
+          />
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Deskripsi</label>
