@@ -220,14 +220,11 @@ export default function AdminKategoriPage() {
                       </Button>
 
                       <AlertDialog open={deletingId === cat.id} onOpenChange={(open) => !open && setDeletingId(null)}>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => setDeletingId(cat.id)}
-                          >
-                            <Trash2 className="w-4 h-4 text-destructive" />
-                          </Button>
+                        <AlertDialogTrigger
+                          render={<Button variant="ghost" size="icon" />}
+                          onClick={() => setDeletingId(cat.id)}
+                        >
+                          <Trash2 className="w-4 h-4 text-destructive" />
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
